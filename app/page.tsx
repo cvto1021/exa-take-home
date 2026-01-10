@@ -26,6 +26,14 @@ export default function Home() {
   return (
     <main style={{ maxWidth: 900, margin: "40px auto", padding: 16, fontFamily: "system-ui" }}>
       <h1>Exa Public Safety Applet</h1>
+      
+      <p>
+        Built for <strong>911 / Emergency Communications Center supervisors</strong>
+        to quickly generate shift-change briefings during active incidents.
+      </p>
+      <p style={{ opacity: 0.8 }}>
+        Pulls official updates, verified context, and past playbooks using Exa.
+      </p>
 
       <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
         <input
