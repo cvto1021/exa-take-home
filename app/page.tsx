@@ -76,10 +76,10 @@ export default function Home() {
   return (
     <main className="app">
       <header className="app-header">
-        <h1>Exa Public Safety Builder</h1>
+        <h1 className="title">Exa Public Safety Builder</h1>
         
         <p className="subtitle">
-          Built for <strong>911 / Emergency Communications Center supervisors</strong>
+          Built for <strong>911 / Emergency Communications Center supervisors </strong>
           to quickly generate shift-change briefings during active incidents.
         </p>
         <p className="description">
@@ -90,14 +90,14 @@ export default function Home() {
       {/* Inputs */}
       <section className="card input-grid">
         <label>
-          <span>Location</span>
+          <span>Location </span>
           <input value={location}
            onChange={(e) => setLocation(e.target.value)} 
           />
         </label>
 
         <label>
-          <span>Incident focus</span>
+          <span>Incident focus </span>
           <input 
             value={incident} 
             onChange={(e) => setIncident(e.target.value)}  
@@ -105,7 +105,7 @@ export default function Home() {
         </label>
 
         <label>
-          <span>Timeframe</span>
+          <span>Timeframe </span>
           <select 
             value={timeframeDays} 
             onChange={(e) => setTimeframeDays(Number(e.target.value))}
