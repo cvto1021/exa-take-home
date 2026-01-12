@@ -1,4 +1,5 @@
 "use client";
+import "./globals.css";
 import { useMemo, useState } from "react";
 
 type ExaResult = {
@@ -16,8 +17,8 @@ function buildQuery(modes: Mode, location: string, incident: string, timeframeDa
   const timeHint =
     timeframeDays <= 1
       ? "in the last 24 hours"
-      : timeframeDays <= 7
-      ? "in the past week"
+      : timeframeDays <= 3
+      ? "in the past 72 hours"
       : `in the past ${timeframeDays} days`;
 
   if (modes === "official updates") {
@@ -32,7 +33,7 @@ function buildQuery(modes: Mode, location: string, incident: string, timeframeDa
 export default function Home() {
   // States default query for public safety supervisors managing emergency incidents
   const [location, setLocation] = useState("King County, WA");
-  const [incident, setIncident] = useState("EMS OR 911 OD dispatch");
+  const [incident, setIncident] = useState("EMS OR 911 OR dispatch");
   const [timeframeDays, setTimeframeDays] = useState(3);
 
   // Workflow mode
@@ -73,32 +74,42 @@ export default function Home() {
   }
 
   return (
-    <main style={{ maxWidth: 950, margin: "40px auto", padding: 16, fontFamily: "system-ui" }}>
-      <h1 style={{ marginBottom: 6 }}>Exa Public Safety Builder</h1>
-      
-      <p style={{ marginTop: 0, opacity: 0.85 }}>
-        Built for <strong>911 / Emergency Communications Center supervisors</strong>
-        to quickly generate shift-change briefings during active incidents.
-      </p>
-      <p style={{ opacity: 0.8 }}>
-        Pulls official updates, verified context, and past playbooks using Exa.
-      </p>
+    <main className="app">
+      <header className="app-header">
+        <h1>Exa Public Safety Builder</h1>
+        
+        <p className="subtitle">
+          Built for <strong>911 / Emergency Communications Center supervisors</strong>
+          to quickly generate shift-change briefings during active incidents.
+        </p>
+        <p className="description">
+          Pulls official updates, verified context, and past playbooks using Exa.
+        </p>
+      </header>
 
       {/* Inputs */}
-      <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginTop: 18 }}>
+      <section className="card input-grid">
         <label>
-          <div style={{ fontSize: 12, opacity: 0.8 }}>Location</div>
-          <input value={location} onChange={(e) => setLocation(e.target.value)} style={{ width: "100%", padding: 10 }} />
+          <span>Location</span>
+          <input value={location}
+           onChange={(e) => setLocation(e.target.value)} 
+          />
         </label>
 
         <label>
-          <div style={{ fontSize: 12, opacity: 0.8 }}>Incident focus</div>
-          <input value={incident} onChange={(e) => setIncident(e.target.value)} style={{ width: "100%", padding: 10 }} />
+          <span>Incident focus</span>
+          <input 
+            value={incident} 
+            onChange={(e) => setIncident(e.target.value)}  
+          />
         </label>
 
         <label>
-          <div style={{ fontSize: 12, opacity: 0.8 }}>Timeframe</div>
-          <select value={timeframeDays} onChange={(e) => setTimeframeDays(Number(e.target.value))} style={{ width: "100%", padding: 10 }}>
+          <span>Timeframe</span>
+          <select 
+            value={timeframeDays} 
+            onChange={(e) => setTimeframeDays(Number(e.target.value))}
+          >
             <option value={1}>Last 24 hours</option>
             <option value={3}>Last 72 hours</option>
             <option value={7}>Last 7 days</option>
@@ -107,38 +118,52 @@ export default function Home() {
       </section>
 
       {/* Workflow buttons */}
-      <section style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
-        <button onClick={() => setMode("official updates")} style={{ padding: "10px 12px", fontWeight: mode === "official updates" ? 700 : 400 }}>
-          Official Updates
-        </button>
-        <button onClick={() => setMode("verified context")} style={{ padding: "10px 12px", fontWeight: mode === "verified context" ? 700 : 400 }}>
-          Verified Context
-        </button>
-        <button onClick={() => setMode("past playbooks")} style={{ padding: "10px 12px", fontWeight: mode === "past playbooks" ? 700 : 400 }}>
-          Playbooks (AAR/SOP PDFs)
-        </button>
+      <section className="workflow">
+        <div className="workflow-modes">
+          <button 
+            className={mode === "official updates" ? "active" : ""}
+            onClick={() => setMode("official updates")}
+          >
+            Official Updates
+          </button>
 
-        <button onClick={run} style={{ padding: "10px 14px", marginLeft: "auto" }}>
+          <button 
+            className={mode === "verified context" ? "active" : ""}
+            onClick={() => setMode("verified context")}
+          >
+            Verified Context
+          </button>
+          
+          <button 
+            className={mode === "past playbooks" ? "active" : ""}
+            onClick={() => setMode("past playbooks")}
+          >
+            Playbooks (AAR/SOP PDFs)
+          </button>
+        </div>
+
+        <button className="primary" onClick={run}>
           {loading ? "Searching..." : "Generate Briefing Sources"}
         </button>
       </section>
 
-      {/* Show the query for transparency */}
-      <section style={{ marginTop: 12 }}>
-        <div style={{ fontSize: 12, opacity: 0.7 }}>Query (auto-generated)</div>
-        <div style={{ padding: 10, background: "#f6f6f6", borderRadius: 8, overflowX: "auto" }}>{query}</div>
+      {/* Query Preview */}
+      <section className="card query-box">
+        <span className="label">Query (auto-generated)</span>
+        <pre>{query}</pre>
       </section>
 
-      {error && <p style={{ color: "crimson", marginTop: 14 }}>{error}</p>}
+      {error && <div className="error">{error}</div>}
 
-      <ul style={{ marginTop: 20 }}>
+      {/* Results */}
+      <ul className="result">
         {results.map((x, i) => (
-          <li key={i} style={{ marginBottom: 14 }}>
+          <li key={i} className="result-card">
             <a href={x.url} target="_blank" rel="noreferrer">
               {x.title || x.url}
             </a>
-            <div style={{ fontSize: 12, opacity: 0.75 }}>{new URL(x.url).hostname}</div>
-            {x.snippet ? <div style={{ opacity: 0.85 }}>{x.snippet}</div> : null}
+            <div className="domain">{new URL(x.url).hostname}</div>
+            {x.snippet && <p className="snippet">{x.snippet}</p>}
           </li>
         ))}
       </ul>

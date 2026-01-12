@@ -24,3 +24,152 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+/* ---------- App layout ---------- */
+.app {
+  max-width: 950px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.app-header {
+  margin-bottom: 20px;
+}
+
+.subtitle {
+  margin-top: 6px;
+  opacity: 0.9;
+}
+
+.description {
+  opacity: 0.75;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-soft);
+}
+
+/* ---------- Inputs ---------- */
+.input-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+label span {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* ---------- Workflow ---------- */
+.workflow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.workflow-modes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.workflow button.active {
+  background: linear-gradient(
+    90deg,
+    rgba(110, 231, 255, 0.25),
+    rgba(167, 139, 250, 0.22)
+  );
+  border-color: rgba(110, 231, 255, 0.6);
+  font-weight: 700;
+}
+
+button.primary {
+  margin-left: auto;
+  padding: 12px 18px;
+  font-weight: 700;
+  border-color: rgba(110, 231, 255, 0.45);
+  background: linear-gradient(
+    90deg,
+    rgba(110, 231, 255, 0.22),
+    rgba(167, 139, 250, 0.20)
+  );
+}
+
+/* ---------- Query ---------- */
+.query-box {
+  margin-top: 14px;
+}
+
+.query-box .label {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.query-box pre {
+  margin-top: 8px;
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  background: rgba(255,255,255,0.06);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- Results ---------- */
+.results {
+  margin-top: 22px;
+  display: grid;
+  gap: 14px;
+}
+
+.result-card {
+  padding: 14px;
+}
+
+.result-card a {
+  font-size: 15px;
+}
+
+.domain {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-top: 2px;
+}
+
+.snippet {
+  margin-top: 8px;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+/* ---------- Error ---------- */
+.error {
+  margin-top: 14px;
+  color: var(--danger);
+  background: rgba(255, 90, 122, 0.12);
+  border: 1px solid rgba(255, 90, 122, 0.25);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .input-grid {
+    grid-template-columns: 1fr;
+  }
+
+  button.primary {
+    width: 100%;
+    margin-left: 0;
+  }
+}
