@@ -1,29 +1,27 @@
 import Exa from "exa-js";
+import { isoDaysAgo } from "@/app/lib/time";
+import { OFFICIAL_DOMAINS, VERIFIED_CONTEXT_DOMAINS, PLAYBOOK_DOMAINS } from "@/app/lib/domains";
+
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const query = body?.query as string;
-    const numResults = Number(body?.numResults || 8);
+  const { query, mode, timeframeDays, numResults } = await req.json();
 
-    if (!query || typeof query !== "string") {
-      return Response.json({ error: "Missing query" }, { status: 400 });
-    }
+  const exa = new Exa(process.env.EXA_API_KEY!);
 
-    if (!process.env.EXA_API_KEY) {
-      return Response.json({ error: "EXA_API_KEY not set" }, { status: 500 });
-    }
+  const includeDomains =
+    mode === "official updates"
+      ? OFFICIAL_DOMAINS
+      : mode === "verified context"
+      ? VERIFIED_CONTEXT_DOMAINS
+      : PLAYBOOK_DOMAINS;
 
-    const exa = new Exa(process.env.EXA_API_KEY);
+  const res = await exa.searchAndContents(query, {
+    numResults: Math.min(numResults ?? 8, 10),
+    includeDomains,
+    startPublishedDate: isoDaysAgo(timeframeDays ?? 3),
+    highlights: true,
+    text: { maxCharacters: 2000 },
+  });
 
-    const res = await exa.search(query, {
-      numResults: Math.min(Math.max(numResults,1), 10),
-      // You can add: startPublishedDate, includeDomains, excludeDomains, etc.
-    });
-
-    // SDK returns { results: [...] } in common usage
-    return Response.json({ results: res.results ?? res });
-  } catch (e: any) {
-    return Response.json({ error: e?.message ?? "Server error" }, { status: 500 });
-  }
+  return Response.json({ results: res.results });
 }

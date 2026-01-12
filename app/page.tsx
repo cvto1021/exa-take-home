@@ -1,12 +1,14 @@
 "use client";
 import "./globals.css";
 import { useMemo, useState } from "react";
+import { trustTier, extractBriefingBullets } from "./lib/briefing";
+import type { ExaResult } from "./lib/types/exa";
 
-type ExaResult = {
-  url: string;
-  title?: string;
-  snippet?: string; 
-};
+
+// 1. Build semantic intent query
+// 2. Call /api/exa-search
+// 3. Render briefing-ready cards
+
 
 type Mode = "official updates" | "verified context" | "past playbooks";
 
@@ -25,9 +27,10 @@ function buildQuery(modes: Mode, location: string, incident: string, timeframeDa
     return `site:.gov ("press release" OR "alert" OR "official update") (police OR fire OR sheriff OR "emergency management") ${inc} (${loc}) ${timeHint}`;
   }
    if (modes === "verified context") {
-    return `(${inc}) (${loc}) (police OR fire OR emergency OR incident) site:seattletimes.com OR site:kuow.org OR site:komonews.com ${timeHint}`;
-  } 
-  return `"(after action report" OR AAR OR "lessons learned" OR SOP OR "incident action plan" OR IAP) site:.gov filetype:pdf (${inc}) (${loc})`;
+    return `verified news coverage and situational context about ${inc} in ${loc} ${timeHint}`;
+  }
+  // past playbooks
+  return `after action report or lessons learned related to ${inc} relevant to ${loc}`;
 }
 
 export default function Home() {
@@ -37,7 +40,7 @@ export default function Home() {
   const [timeframeDays, setTimeframeDays] = useState(3);
 
   // Workflow mode
-  const [mode, setMode] = useState<Mode>("past playbooks");
+  const [mode, setMode] = useState<Mode>("official updates");
 
   //Results and Request state
   const [results, setResults] = useState<ExaResult[]>([]);
@@ -56,14 +59,14 @@ export default function Home() {
       setError(null);
       setResults([]);
 
-      const r = await fetch("/api/exa-search", {
+      const res = await fetch("/api/exa-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, numResults: 8 }),
+        body: JSON.stringify({ query, mode, timeframeDays, numResults: 8 }),
       });
       
-      const data = await r.json();
-      if (!r.ok) throw new Error(data?.error || `Request failed (${r.status})`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
       
       setResults(data.results || []);
     } catch (e: any) {
@@ -83,7 +86,8 @@ export default function Home() {
           to quickly generate shift-change briefings during active incidents.
         </p>
         <p className="description">
-          Pulls official updates, verified context, and past playbooks using Exa.
+          Pulls authoritative updates, verified context, and historical playbooks
+          from real external sources using Exa.
         </p>
       </header>
 
@@ -160,10 +164,17 @@ export default function Home() {
         {results.map((x, i) => (
           <li key={i} className="result-card">
             <a href={x.url} target="_blank" rel="noreferrer">
-              {x.title || x.url}
+              {x.title ?? x.url}
             </a>
-            <div className="domain">{new URL(x.url).hostname}</div>
-            {x.snippet && <p className="snippet">{x.snippet}</p>}
+            <div className="domain">
+              {new URL(x.url).hostname} • {trustTier(x.url)}
+            </div>
+
+            <ul className="snippet">
+              {extractBriefingBullets(x).map((b, idx) => (
+                <li key={idx}>{b}</li>
+              ))}
+            </ul>
           </li>
         ))}
       </ul>
