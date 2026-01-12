@@ -10,25 +10,6 @@ import type { ExaResult } from "./lib/types/exa";
 // 3. Render briefing-ready cards
 
 
-type BriefItem = { text: string; sourceUrl: string };
-
-type Briefing = {
-  generatedAt: string;
-  endUser: string;
-  location: string;
-  incident: string;
-  timeframeDays: number;
-  mode: string;
-
-  whatChanged: BriefItem[];
-  confirmed: BriefItem[];
-  unconfirmed: BriefItem[];
-  recommendedActions: BriefItem[];
-  playbooks: { title: string; url: string; whyRelevant: string }[];
-
-  sources: (ExaResult & { domain: string })[];
-};
-
 type Mode = "official updates" | "verified context" | "past playbooks";
 
 function buildQuery(modes: Mode, location: string, incident: string, timeframeDays: number) {
@@ -52,13 +33,6 @@ function buildQuery(modes: Mode, location: string, incident: string, timeframeDa
   return `after action report or lessons learned related to ${inc} relevant to ${loc}`;
 }
 
-function fmtDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleString();
-  } catch {
-    return iso;
-  }
-}
 
 export default function Home() {
   // States default query for public safety supervisors managing emergency incidents
@@ -71,7 +45,6 @@ export default function Home() {
 
   //Results and Request state
   const [results, setResults] = useState<ExaResult[]>([]);
-  const [briefing, setBriefing] = useState<Briefing | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,7 +59,6 @@ export default function Home() {
       setLoading(true);
       setError(null);
       setResults([]);
-      setBriefing(null);
 
       const res = await fetch("/api/exa-search", {
         method: "POST",
@@ -97,11 +69,10 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
       
-      // Set results and briefing
-      setResults(data.results || []);
-      setBriefing(data.briefing || null);
+      // Set results
+      setResults(data.results ?? []);
     } catch (e: any) {
-      setError(e?.message || "Something went wrong");
+      setError(e.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -189,118 +160,7 @@ export default function Home() {
       </section>
 
       {error && <div className="error">{error}</div>}
-
-      {/* NEW: Briefing Artifact */}
-      {briefing && (
-        <section className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-            <h2 style={{ margin: 0 }}>Shift-Change Briefing Draft</h2>
-            <div style={{ opacity: 0.8, fontSize: 13 }}>
-              Generated: {fmtDate(briefing.generatedAt)} · End user: {briefing.endUser}
-            </div>
-          </div>
-
-          <div style={{ opacity: 0.85, marginTop: 6, fontSize: 14 }}>
-            <strong>Location:</strong> {briefing.location} · <strong>Incident:</strong> {briefing.incident} ·{" "}
-            <strong>Window:</strong> {briefing.timeframeDays}d · <strong>Mode:</strong> {briefing.mode}
-          </div>
-
-          <div className="briefing-grid" style={{ marginTop: 14 }}>
-            <div>
-              <h3>What Changed</h3>
-              {briefing.whatChanged?.length ? (
-                <ul>
-                  {briefing.whatChanged.map((x, i) => (
-                    <li key={i}>
-                      {x.text}{" "}
-                      <a href={x.sourceUrl} target="_blank" rel="noreferrer">
-                        (source)
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted">No clear update summary found in snippets.</p>
-              )}
-            </div>
-
-            <div>
-              <h3>Recommended Actions</h3>
-              {briefing.recommendedActions?.length ? (
-                <ul>
-                  {briefing.recommendedActions.map((x, i) => (
-                    <li key={i}>
-                      {x.text}{" "}
-                      <a href={x.sourceUrl} target="_blank" rel="noreferrer">
-                        (source)
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted">No actionable guidance detected yet.</p>
-              )}
-            </div>
-
-            <div>
-              <h3>Confirmed</h3>
-              {briefing.confirmed?.length ? (
-                <ul>
-                  {briefing.confirmed.map((x, i) => (
-                    <li key={i}>
-                      {x.text}{" "}
-                      <a href={x.sourceUrl} target="_blank" rel="noreferrer">
-                        (source)
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted">No confirmed statements detected yet.</p>
-              )}
-            </div>
-
-            <div>
-              <h3>Unconfirmed / Needs Verification</h3>
-              {briefing.unconfirmed?.length ? (
-                <ul>
-                  {briefing.unconfirmed.map((x, i) => (
-                    <li key={i}>
-                      {x.text}{" "}
-                      <a href={x.sourceUrl} target="_blank" rel="noreferrer">
-                        (source)
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted">No unconfirmed claims flagged.</p>
-              )}
-            </div>
-
-            <div style={{ gridColumn: "1 / -1" }}>
-              <h3>Relevant Playbooks (AAR/SOP)</h3>
-              {briefing.playbooks?.length ? (
-                <ul>
-                  {briefing.playbooks.map((p, i) => (
-                    <li key={i}>
-                      <a href={p.url} target="_blank" rel="noreferrer">
-                        {p.title}
-                      </a>
-                      <div className="muted" style={{ marginTop: 4 }}>
-                        Why relevant: {p.whyRelevant}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted">No playbooks extracted for this run.</p>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-              
+        
 
       {/* Results */}
       <ul className="result">
