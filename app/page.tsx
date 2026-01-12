@@ -111,6 +111,14 @@ export default function Home() {
     }
   }
 
+  function safeHostname(url: string) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url; // fallback
+  }
+}
+
   return (
     <main className="app">
       <header className="app-header">
@@ -180,9 +188,11 @@ export default function Home() {
           </button>
         </div>
 
-        <button className="primary" onClick={run}>
-          {loading ? "Searching..." : "Generate Briefing Sources"}
-        </button>
+        <button 
+        className="primary" type="button" 
+        onClick={run} disabled={loading}>
+  {loading ? "Searching..." : "Generate Briefing Sources"}
+</button>
       </section>
 
       {/* Query Preview */}
@@ -312,7 +322,7 @@ export default function Home() {
             <a href={x.url} target="_blank" rel="noreferrer">
               {x.title || x.url}
             </a>
-            <div className="domain">{new URL(x.url).hostname}</div>
+            <div className="domain">{safeHostname(x.url)}</div>
             {x.snippet && <p className="snippet">{x.snippet}</p>}
           </li>
         ))}
